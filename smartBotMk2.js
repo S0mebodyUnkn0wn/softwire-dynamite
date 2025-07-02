@@ -64,7 +64,7 @@ class Bot {
 
         let pick_index = null;
 
-        if (this.tie_streak == 3 && this.dynamite_count > 0) {pick_index = 4;}
+        if (this.tie_streak >= 3 && this.dynamite_count > 0) {pick_index = 4;}
         else {pick_index = this.chooseMove(this.throw_weights);}
 
         if (pick_index==4) {
