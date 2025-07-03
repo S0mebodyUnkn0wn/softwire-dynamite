@@ -9,7 +9,7 @@ const dynamite_tie_streak_threshold = 3;
 class Bot {
 
     constructor () {
-        this.roundN = 0;
+        this.round_number = 0;
         this.dynamite_count = 100;
         this.enemy_dynamite_count = 100;
         this.throw_weights  = [33/100, 33/100, 33/100, 1/100, 0/100];
@@ -20,11 +20,13 @@ class Bot {
     makeMove(gamestate) {
         let last_enemy_move = null;
         let last_player_move = null;
-        if (this.roundN>0){
+        if (this.round_number > 0){
             const last_round = gamestate.rounds[gamestate.rounds.length - 1];
             last_enemy_move = last_round.p2;
             last_player_move = last_round.p1;
         }
+
+        this.round_number++;
 
         if (last_enemy_move == last_player_move) {
             this.tie_streak++;
@@ -35,46 +37,40 @@ class Bot {
             this.tie_streak = 0;
         }
 
-
-
-        this.roundN++;
-
         switch (last_enemy_move) { // refactor later: can we roll this into one/two ifs
             case "R":
-                this.adjustWeight([1, 2, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
+                this.adjustWeights([1, 2, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
                 break;
             case "P":
-                this.adjustWeight([2, 0, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
+                this.adjustWeights([2, 0, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
                 break;
             case "S":
-                this.adjustWeight([0, 1, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
+                this.adjustWeights([0, 1, 3], [1+percent_modifier, 1-percent_modifier, 1-percent_modifier]);
                 break;
             case "W":
-                this.adjustWeight([4], [1-percent_modifier]);
+                this.adjustWeights([4], [1-percent_modifier]);
                 break;
             case "D":
                 this.enemy_dynamite_count--;
                 if (this.enemy_dynamite_count==0){
-                    this.adjustWeight([3],[0]);
+                    this.adjustWeights([3],[0]);
                 }
-                this.adjustWeight([3], [1+percent_modifier]);
+                this.adjustWeights([3], [1+percent_modifier]);
                 break;
         }
 
 
-        let pick_index = null;
-
-        if (this.tie_streak >= dynamite_tie_streak_threshold && this.dynamite_count > 0) {pick_index = 4;}
-        else {pick_index = this.chooseMove(this.throw_weights);}
+        // If we reached the tie threshold - pick dynamite (if we can), otherwise - roll for move using chooseMove()
+        const pick_index = (this.tie_streak >= dynamite_tie_streak_threshold && this.dynamite_count > 0) ? 
+                       4 : this.chooseMove(this.throw_weights);
 
         if (pick_index==4) {
             this.dynamite_count--;
             if (this.dynamite_count==0){
                 // console.log("Ran out!", this.roundN, this.throw_weights);
-                this.adjustWeight([4],[0]);
+                this.adjustWeights([4],[0]);
             }
         }
-        
         
         
         // console.log(this.throw_weights);
@@ -96,19 +92,13 @@ class Bot {
 
     }
 
-    adjustWeight(indices, new_values) {
+    adjustWeights(indices, new_values) {
 
         for (let i=0; i<indices.length; i++) {
             this.throw_weights[indices[i]]*=new_values[i];
         }
 
         normalize_weights(this.throw_weights)
-        // Moved to normalize_weights()
-        // let sum = compute_sum(this.throw_weights);
-        // for (let i=0;i<this.throw_weights.length;i++){
-        //     this.throw_weights[i]/=sum;
-        // }
-        // console.log(this.throw_weights, sum);
 
     }
 }
