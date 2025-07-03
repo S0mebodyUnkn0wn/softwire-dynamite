@@ -9,10 +9,14 @@ import os
 if __name__ == "__main__":
 
     os.system("rm out.txt")
-
-    bot1 = "smartBotMk2.js"
-    bot2 = "smartBotMk3.js"
-
+    bot1: str
+    bot2: str
+    if len(sys.argv)==3:
+        bot1 = sys.argv[1]
+        bot2 = sys.argv[2]
+    else:
+        bot1 = "smartBotMk3.js"
+        bot2 = "smartBotMk4.js"
     command = f"node dynamite-cli.js {bot1} {bot2} >> out.txt"
     for i in range(200):
         os.system(command)
